@@ -1,21 +1,38 @@
 import React from "react";
+import { useEffect } from "react";
+import { useState } from "react";
 import "./Feed.css";
 import Post from "./Post";
 import TweetBox from "./TweetBox";
+import db from "./firebase";
 
 function Feed() {
+    const [posts, setPosts] = useState([]);
+
+    useEffect(() => {
+        db.collection("posts")
+            .orderBy("postId", "desc")
+            .onSnapshot((snapshot) =>
+                setPosts(snapshot.docs.map((doc) => doc.data()))
+            );
+    }, []);
+
     return (
         <div className="feed">
             <h2 className="feed__header">Home</h2>
             <TweetBox />
-            <Post
-                displayName="Shahin"
-                avatar="https://avatars.githubusercontent.com/u/44506464?s=60&v=4"
-                userName="@shahin333"
-                verified
-                text="Hello from the post"
-                image="https://cdn.pixabay.com/photo/2016/03/09/09/22/workplace-1245776_960_720.jpg"
-            />
+            {posts.map((post) => (
+                <Post
+                    key={post.postId}
+                    displayName={post.displayName}
+                    avatar={post.avatar}
+                    userName={post.userName}
+                    verified={post.verified}
+                    text={post.text}
+                    image={post.image}
+                    date={new Date(post.postId).toLocaleString()}
+                />
+            ))}
         </div>
     );
 }
